@@ -1,6 +1,6 @@
 use crate::lox::Lox;
 use crate::token::Token;
-use crate::token_type::TokenType;
+use crate::token_type::{TokenType, KEYWORDS};
 
 pub struct Scanner {
     source: String,
@@ -81,28 +81,50 @@ impl Scanner {
                 };
                 self.add_token(token_type);
             }
-            // '/' => {
-            //     if self.match_char('/') {
-            //         while self.peek() != '\n' && !self.is_at_end() {
-            //             self.advance();
-            //         }
-            //     } else {
-            //         self.add_token(TokenType::Slash);
-            //     }
-            // }
-            // ' ' | '\r' | '\t' => (),
-            // '\n' => self.line += 1,
-            // '"' => self.string(),
+            '/' => {
+                if self.match_char('/') {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                } else if self.match_char('*') {
+                    while self.peek() != '*' && self.peek_next() != '/' && !self.is_at_end() {
+                        if self.peek() == '\n' {
+                            self.line += 1;
+                        }
+                        self.advance();
+                    }
+
+                    if self.is_at_end() {
+                        Lox::error(self.line, "Unterminated block comment.");
+                        return;
+                    }
+
+                    self.advance();
+                    self.advance();
+                } else {
+                    self.add_token(TokenType::Slash);
+                }
+            }
+            ' ' | '\r' | '\t' => (),
+            '\n' => self.line += 1,
+            '"' => self.string(),
             _ => {
-                // if c.is_digit(10) {
-                //     self.number();
-                // } else if c.is_alphabetic() {
-                //     self.identifier();
-                // } else {
-                Lox::error(self.line, "Unexpected character.");
-                // }
+                if c.is_digit(10) {
+                    self.number();
+                } else if c.is_alphabetic() {
+                    self.identifier();
+                } else {
+                    Lox::error(self.line, "Unexpected character.");
+                }
             }
         }
+    }
+
+    fn peek(&self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+        self.source.chars().nth(self.current).unwrap()
     }
 
     fn is_at_end(&self) -> bool {
@@ -140,5 +162,84 @@ impl Scanner {
 
         self.current += 1;
         return true;
+    }
+
+    fn number(&mut self) {
+        while self.peek().is_digit(10) {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.peek_next().is_digit(10) {
+            self.advance();
+            while self.peek().is_digit(10) {
+                self.advance();
+            }
+        }
+
+        self.tokens.push(Token::new(
+            TokenType::Number,
+            self.source
+                .chars()
+                .skip(self.start)
+                .take(self.current - self.start)
+                .collect::<String>(),
+            "".to_string(),
+            self.line,
+        ));
+    }
+
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            return '\0';
+        }
+
+        self.source.chars().nth(self.current + 1).unwrap()
+    }
+    fn identifier(&mut self) {
+        while self.is_alpha_numeric(self.peek()) {
+            self.advance();
+        }
+
+        let text = self
+            .source
+            .chars()
+            .skip(self.start)
+            .take(self.current - self.start)
+            .collect::<String>();
+        let token_type = KEYWORDS
+            .get(&text.as_str())
+            .unwrap_or(&TokenType::Identifier)
+            .clone();
+        self.tokens
+            .push(Token::new(token_type, text, "".to_string(), self.line));
+    }
+
+    fn string(&mut self) {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            Lox::error(self.line, "Unterminated string.");
+            return;
+        }
+
+        self.advance();
+
+        //Trim the surrounding quotes
+        let value = self
+            .source
+            .chars()
+            .skip(self.start + 1)
+            .take(self.current - self.start - 2)
+            .collect::<String>();
+        self.add_token_(TokenType::String, value);
+    }
+
+    fn is_alpha_numeric(&self, c: char) -> bool {
+        c.is_alphabetic() || c.is_digit(10)
     }
 }

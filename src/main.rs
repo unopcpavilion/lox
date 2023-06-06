@@ -7,10 +7,10 @@ use std::{env};
 use lox::Lox;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().skip(1).collect();
     let mut lox = Lox::new();
 
-    if args.len() > 0 {
+    if args.len() > 1 {
         println!("Usage: lox [script]");
         exit(64);
     } else if args.len() == 1 {

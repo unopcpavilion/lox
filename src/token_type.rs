@@ -1,7 +1,7 @@
-use std::fmt;
-use std::fmt::{Formatter, write};
+use std::collections::HashMap;
+use lazy_static::lazy_static;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum TokenType {
     // Single-character tokens
     LeftParen, RightParen, LeftBrace, RightBrace, Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
@@ -18,54 +18,25 @@ pub enum TokenType {
     Eof
 }
 
-impl fmt::Display for TokenType {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        fmt::Debug::fmt(self, f)
-    }
-}
-
-impl TokenType{
-    pub fn clone(&self) -> TokenType {
-        match self {
-            TokenType::LeftParen => TokenType::LeftParen,
-            TokenType::RightParen => TokenType::RightParen,
-            TokenType::LeftBrace => TokenType::LeftBrace,
-            TokenType::RightBrace => TokenType::RightBrace,
-            TokenType::Comma => TokenType::Comma,
-            TokenType::Dot => TokenType::Dot,
-            TokenType::Minus => TokenType::Minus,
-            TokenType::Plus => TokenType::Plus,
-            TokenType::Semicolon => TokenType::Semicolon,
-            TokenType::Slash => TokenType::Slash,
-            TokenType::Star => TokenType::Star,
-            TokenType::Bang => TokenType::Bang,
-            TokenType::BangEqual => TokenType::BangEqual,
-            TokenType::Equal => TokenType::Equal,
-            TokenType::EqualEqual => TokenType::EqualEqual,
-            TokenType::Greater => TokenType::Greater,
-            TokenType::GreaterEqual => TokenType::GreaterEqual,
-            TokenType::Less => TokenType::Less,
-            TokenType::LessEqual => TokenType::LessEqual,
-            TokenType::Identifier => TokenType::Identifier,
-            TokenType::String => TokenType::String,
-            TokenType::Number => TokenType::Number,
-            TokenType::And => TokenType::And,
-            TokenType::Class => TokenType::Class,
-            TokenType::Else => TokenType::Else,
-            TokenType::False => TokenType::False,
-            TokenType::Fun => TokenType::Fun,
-            TokenType::For => TokenType::For,
-            TokenType::If => TokenType::If,
-            TokenType::Nil => TokenType::Nil,
-            TokenType::Or => TokenType::Or,
-            TokenType::Print => TokenType::Print,
-            TokenType::Return => TokenType::Return,
-            TokenType::Super => TokenType::Super,
-            TokenType::This => TokenType::This,
-            TokenType::True => TokenType::True,
-            TokenType::Var => TokenType::Var,
-            TokenType::While => TokenType::While,
-            TokenType::Eof => TokenType::Eof
-        }
-    }
+lazy_static! {
+   pub static ref KEYWORDS: HashMap<&'static str, TokenType> = {
+        let mut m = HashMap::new();
+        m.insert("and", TokenType::And);
+        m.insert("class", TokenType::Class);
+        m.insert("else", TokenType::Else);
+        m.insert("false", TokenType::False);
+        m.insert("for", TokenType::For);
+        m.insert("fun", TokenType::Fun);
+        m.insert("if", TokenType::If);
+        m.insert("nil", TokenType::Nil);
+        m.insert("or", TokenType::Or);
+        m.insert("print", TokenType::Print);
+        m.insert("return", TokenType::Return);
+        m.insert("super", TokenType::Super);
+        m.insert("this", TokenType::This);
+        m.insert("true", TokenType::True);
+        m.insert("var", TokenType::Var);
+        m.insert("while", TokenType::While);
+        m
+    };
 }

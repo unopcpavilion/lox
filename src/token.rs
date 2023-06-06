@@ -1,4 +1,3 @@
-use std::vec;
 use crate::token_type::TokenType;
 
 #[derive(Clone)]
@@ -20,16 +19,7 @@ impl Token {
     }
 
    pub fn to_string(&self) -> String {
-        format!("{:?} {} {}", self.token_type, self.lexeme, self.literal)
-    }
-
-    pub fn clone(&self) -> Token {
-        Token {
-            token_type: self.token_type.clone(),
-            lexeme: self.lexeme.clone(),
-            literal: self.literal.clone(),
-            line: self.line.clone()
-        }
+        format!("{:?} {} {} {}", self.token_type, self.lexeme, self.literal, self.line)
     }
 }
 
